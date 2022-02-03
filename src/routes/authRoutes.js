@@ -1,32 +1,48 @@
-const express = require('express')
-const mongoose = require("mongoose")
-const User = mongoose.model("User")
-const jwt = require("jsonwebtoken")
-const requireAuth = require("../middlewares/requireAuth")
+const express = require("express");
+const mongoose = require("mongoose");
+const User = mongoose.model("User");
+const jwt = require("jsonwebtoken");
+const requireAuth = require("../middlewares/requireAuth");
+const router = express.Router();
+const secret_key_token = "SECRET_WEB_TOKEN"
 
-const router = express.Router()
+router.post("/signup", async (req, res) => {
+  const { email, password } = req.body;
 
+  try {
+    const user = new User({ email, password });
 
-router.post('/signup' , async (req , res) => {
-    const {email,password} = req.body
+    await user.save();
+    const token = jwt.sign({ userId: user._id }, secret_key_token);
+    res.send({ token });
+  } catch (e) {
+    return res.status(422).send(e.message);
+  }
+});
 
-    try{
-        const user = new User({email,password})
+router.get("/asx", requireAuth, (req, res) => {
+  res.send("Hello There from asx");
+});
 
-        await user.save()
-        const token = jwt.sign({userId : user._id} , "SECRET_WEB_TOKEN" )
-        res.send({token})
-    }
-    catch(e){
-        return res.status(422).send(e.message)
-    }
+router.post("/signin", async (req, res) => {
+  const { email, password } = req.body;
 
-})
+  if (!email || !password) {
+    return res
+      .status(422)
+      .send({ error: "You can not log in without credentials" });
+  }
 
-
-router.get("/asx" , requireAuth , (req,res) => {
-    res.send("Hello There from asx")
-})
-
-
-module.exports = router
+  const user = await User.findOne({ email: email });
+  if (!user) {
+    res.status(422).send({ error: "Invalid password or email" });
+  }
+  try {
+    await user.comparePassword(password);
+    const token = jwt.sign({userId: user._id}, secret_key_token)
+    res.send({token})
+  } catch (err) {
+    return res.status(422).send({ error: "Invalid password or email" });
+  }
+});
+module.exports = router;
