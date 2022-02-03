@@ -3,6 +3,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 const authRoutes = require('./routes/authRoutes')
 const bodyParser = require('body-parser')
+const requireAuth = require('./middlewares/requireAuth')
 
 const mongoUri = "mongodb+srv://appAdmin:oR5pHUDwRaEKJP3h@cluster0.wasxv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 mongoose.connect(mongoUri)
@@ -15,7 +16,7 @@ const app = express();
 app.use(bodyParser.json())
 app.use(authRoutes)
 
-app.get('/' , (req,res) => {
+app.get('/',requireAuth , (req,res) => {
     res.send("Hello World")
 } )
 

@@ -2,6 +2,7 @@ const express = require('express')
 const mongoose = require("mongoose")
 const User = mongoose.model("User")
 const jwt = require("jsonwebtoken")
+const requireAuth = require("../middlewares/requireAuth")
 
 const router = express.Router()
 
@@ -22,11 +23,8 @@ router.post('/signup' , async (req , res) => {
 
 })
 
-router.get("/" , (req,res) => {
-    res.send("Hello There")
-})
 
-router.get("/asx" , (req,res) => {
+router.get("/asx" , requireAuth , (req,res) => {
     res.send("Hello There from asx")
 })
 
